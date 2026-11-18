@@ -26,14 +26,14 @@ public class TaskService {
     this.subtasks = subtasks;
   }
 
-  public Task owned(UUID user, UUID id) {
+  public Task owned(Long user, Long id) {
     return tasks.findByIdAndUserId(id, user).orElseThrow(ApiException::missing);
   }
 
   public Page<Task> list(
-      UUID user,
+      Long user,
       String status,
-      UUID category,
+      Long category,
       String priority,
       String search,
       Instant dueBefore,
@@ -68,7 +68,7 @@ public class TaskService {
     return result;
   }
 
-  public List<Task> withProgress(UUID user, List<Task> items) {
+  public List<Task> withProgress(Long user, List<Task> items) {
     if (items.isEmpty()) return items;
     var counts = subtasks.countForTasks(user, items.stream().map(t -> t.id).toList());
     for (var task : items) {
@@ -84,7 +84,7 @@ public class TaskService {
     return items;
   }
 
-  public Task save(UUID user, UUID id, JsonNode n) {
+  public Task save(Long user, Long id, JsonNode n) {
     var t = id == null ? new Task() : owned(user, id);
     t.userId = user;
     if (id == null || n.has("title")) t.title = text(n, "title", 150);
@@ -95,7 +95,7 @@ public class TaskService {
       t.description = n.hasNonNull("description") ? n.get("description").asText() : null;
     }
     if (n.has("categoryId")) {
-      t.categoryId = uuid(n, "categoryId");
+      t.categoryId = identifier(n, "categoryId");
       if (t.categoryId != null)
         categories.findByIdAndUserId(t.categoryId, user).orElseThrow(ApiException::missing);
     }
@@ -111,11 +111,11 @@ public class TaskService {
     return tasks.save(t);
   }
 
-  public void delete(UUID user, UUID id) {
+  public void delete(Long user, Long id) {
     tasks.delete(owned(user, id));
   }
 
-  public List<Subtask> subtasks(UUID user, UUID task) {
+  public List<Subtask> subtasks(Long user, Long task) {
     owned(user, task);
     return subtasks.findAllByUserId(user).stream()
         .filter(s -> s.taskId.equals(task))
@@ -123,7 +123,7 @@ public class TaskService {
         .toList();
   }
 
-  public Subtask saveSubtask(UUID user, UUID taskId, UUID id, JsonNode n) {
+  public Subtask saveSubtask(Long user, Long taskId, Long id, JsonNode n) {
     var s =
         id == null
             ? new Subtask()
@@ -139,7 +139,7 @@ public class TaskService {
     return subtasks.save(s);
   }
 
-  public void deleteSubtask(UUID user, UUID id) {
+  public void deleteSubtask(Long user, Long id) {
     subtasks.delete(subtasks.findByIdAndUserId(id, user).orElseThrow(ApiException::missing));
   }
 }

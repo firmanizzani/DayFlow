@@ -1,5 +1,3 @@
 package com.dayflow.task;
 
-import java.util.UUID;
-
-public record SubtaskCount(UUID taskId, Long total, Long completed) {}
+public record SubtaskCount(Long taskId, Long total, Long completed) {}

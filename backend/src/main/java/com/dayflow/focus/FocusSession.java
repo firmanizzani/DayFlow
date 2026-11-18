@@ -1,18 +1,23 @@
 package com.dayflow.focus;
 
 import com.dayflow.common.OwnedEntity;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import jakarta.persistence.*;
 import java.time.*;
-import java.util.UUID;
 
 @Entity
 @Table(name = "focus_sessions")
+@AttributeOverride(name = "id", column = @Column(name = "focus_session_id"))
 public class FocusSession extends OwnedEntity {
-  public UUID taskId;
+  @JsonSerialize(using = ToStringSerializer.class)
+  public Long taskId;
+
   public String mode;
   public Instant startedAt;
   public Instant endedAt;
   public int durationSeconds;
   public boolean completed;
-  public UUID clientId;
+
+  public java.util.UUID clientId;
 }

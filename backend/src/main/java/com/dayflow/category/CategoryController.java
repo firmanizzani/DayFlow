@@ -18,23 +18,23 @@ public class CategoryController {
 
   @GetMapping
   List<Category> list(@AuthenticationPrincipal Jwt j) {
-    return service.list(UUID.fromString(j.getSubject()));
+    return service.list(Long.valueOf(j.getSubject()));
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   Category add(@AuthenticationPrincipal Jwt j, @RequestBody JsonNode n) {
-    return service.save(UUID.fromString(j.getSubject()), null, n);
+    return service.save(Long.valueOf(j.getSubject()), null, n);
   }
 
   @PatchMapping("/{id}")
-  Category update(@AuthenticationPrincipal Jwt j, @PathVariable UUID id, @RequestBody JsonNode n) {
-    return service.save(UUID.fromString(j.getSubject()), id, n);
+  Category update(@AuthenticationPrincipal Jwt j, @PathVariable Long id, @RequestBody JsonNode n) {
+    return service.save(Long.valueOf(j.getSubject()), id, n);
   }
 
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  void delete(@AuthenticationPrincipal Jwt j, @PathVariable UUID id) {
-    service.delete(UUID.fromString(j.getSubject()), id);
+  void delete(@AuthenticationPrincipal Jwt j, @PathVariable Long id) {
+    service.delete(Long.valueOf(j.getSubject()), id);
   }
 }

@@ -18,15 +18,15 @@ public class TaskController {
     this.service = service;
   }
 
-  private UUID user(Jwt j) {
-    return UUID.fromString(j.getSubject());
+  private Long user(Jwt j) {
+    return Long.valueOf(j.getSubject());
   }
 
   @GetMapping("/tasks")
   PageResponse<Task> list(
       @AuthenticationPrincipal Jwt j,
       @RequestParam(required = false) String status,
-      @RequestParam(required = false) UUID categoryId,
+      @RequestParam(required = false) Long categoryId,
       @RequestParam(required = false) String priority,
       @RequestParam(required = false) String search,
       @RequestParam(required = false) Instant dueBefore,
@@ -44,40 +44,40 @@ public class TaskController {
   }
 
   @GetMapping("/tasks/{id}")
-  Task get(@AuthenticationPrincipal Jwt j, @PathVariable UUID id) {
+  Task get(@AuthenticationPrincipal Jwt j, @PathVariable Long id) {
     return service.owned(user(j), id);
   }
 
   @PatchMapping({"/tasks/{id}", "/tasks/{id}/status"})
-  Task update(@AuthenticationPrincipal Jwt j, @PathVariable UUID id, @RequestBody JsonNode n) {
+  Task update(@AuthenticationPrincipal Jwt j, @PathVariable Long id, @RequestBody JsonNode n) {
     return service.save(user(j), id, n);
   }
 
   @DeleteMapping("/tasks/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  void delete(@AuthenticationPrincipal Jwt j, @PathVariable UUID id) {
+  void delete(@AuthenticationPrincipal Jwt j, @PathVariable Long id) {
     service.delete(user(j), id);
   }
 
   @GetMapping("/tasks/{id}/subtasks")
-  List<Subtask> subtasks(@AuthenticationPrincipal Jwt j, @PathVariable UUID id) {
+  List<Subtask> subtasks(@AuthenticationPrincipal Jwt j, @PathVariable Long id) {
     return service.subtasks(user(j), id);
   }
 
   @PostMapping("/tasks/{id}/subtasks")
   @ResponseStatus(HttpStatus.CREATED)
-  Subtask add(@AuthenticationPrincipal Jwt j, @PathVariable UUID id, @RequestBody JsonNode n) {
+  Subtask add(@AuthenticationPrincipal Jwt j, @PathVariable Long id, @RequestBody JsonNode n) {
     return service.saveSubtask(user(j), id, null, n);
   }
 
   @PatchMapping("/subtasks/{id}")
-  Subtask sub(@AuthenticationPrincipal Jwt j, @PathVariable UUID id, @RequestBody JsonNode n) {
+  Subtask sub(@AuthenticationPrincipal Jwt j, @PathVariable Long id, @RequestBody JsonNode n) {
     return service.saveSubtask(user(j), null, id, n);
   }
 
   @DeleteMapping("/subtasks/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  void delSub(@AuthenticationPrincipal Jwt j, @PathVariable UUID id) {
+  void delSub(@AuthenticationPrincipal Jwt j, @PathVariable Long id) {
     service.deleteSubtask(user(j), id);
   }
 }

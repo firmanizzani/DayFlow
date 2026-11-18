@@ -16,7 +16,7 @@ class FocusServiceTest {
   private final FocusSessionRepository repository = mock(FocusSessionRepository.class);
   private final TaskService tasks = mock(TaskService.class);
   private final UserRepository users = mock(UserRepository.class);
-  private final UUID userId = UUID.randomUUID();
+  private final Long userId = 1L;
   private final ObjectMapper json = new ObjectMapper();
   private FocusService service;
 

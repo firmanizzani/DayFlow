@@ -20,18 +20,18 @@ public class FocusController {
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   FocusSession save(@AuthenticationPrincipal Jwt jwt, @RequestBody JsonNode input) {
-    return service.save(UUID.fromString(jwt.getSubject()), input);
+    return service.save(Long.valueOf(jwt.getSubject()), input);
   }
 
   @GetMapping
   List<FocusSession> list(
       @AuthenticationPrincipal Jwt jwt, @RequestParam Instant from, @RequestParam Instant to) {
-    return service.list(UUID.fromString(jwt.getSubject()), from, to);
+    return service.list(Long.valueOf(jwt.getSubject()), from, to);
   }
 
   @GetMapping("/summary")
   Map<String, Long> summary(
       @AuthenticationPrincipal Jwt jwt, @RequestParam Instant from, @RequestParam Instant to) {
-    return service.summary(UUID.fromString(jwt.getSubject()), from, to);
+    return service.summary(Long.valueOf(jwt.getSubject()), from, to);
   }
 }

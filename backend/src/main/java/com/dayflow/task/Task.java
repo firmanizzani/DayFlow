@@ -1,14 +1,18 @@
 package com.dayflow.task;
 
 import com.dayflow.common.OwnedEntity;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import jakarta.persistence.*;
 import java.time.*;
-import java.util.UUID;
 
 @Entity
 @Table(name = "tasks")
+@AttributeOverride(name = "id", column = @Column(name = "task_id"))
 public class Task extends OwnedEntity {
-  public UUID categoryId;
+  @JsonSerialize(using = ToStringSerializer.class)
+  public Long categoryId;
+
   public String title;
   public String description;
   public String priority = "MEDIUM";

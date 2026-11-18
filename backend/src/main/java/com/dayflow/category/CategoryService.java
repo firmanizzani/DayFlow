@@ -17,11 +17,11 @@ public class CategoryService {
     this.categories = categories;
   }
 
-  public List<Category> list(UUID user) {
+  public List<Category> list(Long user) {
     return categories.findAllByUserId(user);
   }
 
-  public Category save(UUID user, UUID id, JsonNode n) {
+  public Category save(Long user, Long id, JsonNode n) {
     var c =
         id == null
             ? new Category()
@@ -36,7 +36,7 @@ public class CategoryService {
     return categories.save(c);
   }
 
-  public void delete(UUID user, UUID id) {
+  public void delete(Long user, Long id) {
     categories.delete(categories.findByIdAndUserId(id, user).orElseThrow(ApiException::missing));
   }
 }

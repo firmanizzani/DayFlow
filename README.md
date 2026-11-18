@@ -237,4 +237,8 @@ Backend unit tests use JUnit and Mockito. Mobile tests use Node's test runner fo
 
 TypeScript and TSX use Prettier with a print width of 88. Keep shared visual styles in theme tokens and reusable native components. Once a database migration has been shared or released, introduce schema changes in a new migration rather than editing an existing one.
 
+Database IDs use per-table BIGINT identity columns with entity-specific names.
+API IDs are decimal strings to preserve JavaScript precision. See
+[database ID conventions and migration checks](docs/database-ids.md).
+
 For production, configure HTTPS, separate environment credentials, working SMTP delivery, and verified native distribution builds.

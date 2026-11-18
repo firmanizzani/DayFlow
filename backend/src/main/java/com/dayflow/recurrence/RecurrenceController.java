@@ -19,36 +19,36 @@ public class RecurrenceController {
 
   @GetMapping("/recurring-rules")
   List<RecurringRule> list(@AuthenticationPrincipal Jwt jwt) {
-    return service.list(UUID.fromString(jwt.getSubject()));
+    return service.list(Long.valueOf(jwt.getSubject()));
   }
 
   @PostMapping("/recurring-rules")
   @ResponseStatus(HttpStatus.CREATED)
   RecurringRule create(@AuthenticationPrincipal Jwt jwt, @RequestBody JsonNode input) {
-    return service.save(UUID.fromString(jwt.getSubject()), null, input);
+    return service.save(Long.valueOf(jwt.getSubject()), null, input);
   }
 
   @PatchMapping("/recurring-rules/{id}")
   RecurringRule update(
-      @AuthenticationPrincipal Jwt jwt, @PathVariable UUID id, @RequestBody JsonNode input) {
-    return service.save(UUID.fromString(jwt.getSubject()), id, input);
+      @AuthenticationPrincipal Jwt jwt, @PathVariable Long id, @RequestBody JsonNode input) {
+    return service.save(Long.valueOf(jwt.getSubject()), id, input);
   }
 
   @DeleteMapping("/recurring-rules/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  void stop(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) {
-    service.stop(UUID.fromString(jwt.getSubject()), id);
+  void stop(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
+    service.stop(Long.valueOf(jwt.getSubject()), id);
   }
 
   @GetMapping("/recurring-occurrences")
   List<RecurrenceService.OccurrenceView> occurrences(
       @AuthenticationPrincipal Jwt jwt, @RequestParam LocalDate from, @RequestParam LocalDate to) {
-    return service.occurrences(UUID.fromString(jwt.getSubject()), from, to);
+    return service.occurrences(Long.valueOf(jwt.getSubject()), from, to);
   }
 
   @PatchMapping("/recurring-occurrences/{id}")
   Occurrence occurrence(
-      @AuthenticationPrincipal Jwt jwt, @PathVariable UUID id, @RequestBody JsonNode input) {
-    return service.updateOccurrence(UUID.fromString(jwt.getSubject()), id, input);
+      @AuthenticationPrincipal Jwt jwt, @PathVariable Long id, @RequestBody JsonNode input) {
+    return service.updateOccurrence(Long.valueOf(jwt.getSubject()), id, input);
   }
 }

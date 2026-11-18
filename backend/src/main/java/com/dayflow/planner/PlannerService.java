@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +37,7 @@ public class PlannerService {
     this.rules = rules;
   }
 
-  public List<PlanningSession> list(UUID user, Instant from, Instant to) {
+  public List<PlanningSession> list(Long user, Instant from, Instant to) {
     validateRange(from, to);
     return sessions.findAllByUserId(user).stream()
         .filter(s -> s.startAt.isBefore(to) && s.endAt.isAfter(from))
@@ -59,7 +58,7 @@ public class PlannerService {
     return start.isBefore(otherEnd) && end.isAfter(otherStart);
   }
 
-  public PlanningSession save(UUID user, UUID id, JsonNode input) {
+  public PlanningSession save(Long user, Long id, JsonNode input) {
     // Serialize writes for each user so concurrent requests see committed conflicts.
     users.lockById(user).orElseThrow(ApiException::missing);
     PlanningSession session = id == null ? new PlanningSession() : owned(user, id);
@@ -68,14 +67,14 @@ public class PlannerService {
     }
     session.userId = user;
     if (id == null || input.has("taskId")) {
-      session.taskId = uuid(input, "taskId");
+      session.taskId = identifier(input, "taskId");
     }
     if (session.taskId == null) {
       throw ApiException.invalid("Choose a task to plan.");
     }
     tasks.owned(user, session.taskId);
     if (input.has("occurrenceId")) {
-      session.occurrenceId = uuid(input, "occurrenceId");
+      session.occurrenceId = identifier(input, "occurrenceId");
     }
     if (session.occurrenceId != null) {
       var occurrence =
@@ -126,7 +125,7 @@ public class PlannerService {
     return sessions.save(session);
   }
 
-  public PlanningSession reschedule(UUID user, UUID id, JsonNode input) {
+  public PlanningSession reschedule(Long user, Long id, JsonNode input) {
     var previous = owned(user, id);
     if (!previous.status.equals("PLANNED")) {
       throw ApiException.invalid("Only planned sessions can be rescheduled.");
@@ -145,19 +144,19 @@ public class PlannerService {
     return sessions.save(next);
   }
 
-  public PlanningSession status(UUID user, UUID id, JsonNode input) {
+  public PlanningSession status(Long user, Long id, JsonNode input) {
     var session = owned(user, id);
     session.status = choice(input, "status", "PLANNED", "COMPLETED", "CANCELLED");
     return sessions.save(session);
   }
 
-  public void cancel(UUID user, UUID id) {
+  public void cancel(Long user, Long id) {
     var session = owned(user, id);
     session.status = "CANCELLED";
     sessions.save(session);
   }
 
-  private PlanningSession owned(UUID user, UUID id) {
+  private PlanningSession owned(Long user, Long id) {
     return sessions.findByIdAndUserId(id, user).orElseThrow(ApiException::missing);
   }
 }

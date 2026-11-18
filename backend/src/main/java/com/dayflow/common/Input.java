@@ -20,6 +20,18 @@ public final class Input {
     return v;
   }
 
+  public static Long identifier(JsonNode n, String key) {
+    if (!n.hasNonNull(key)) return null;
+    String value = n.get(key).asText();
+    if (!value.matches("[1-9][0-9]*"))
+      throw ApiException.invalid(key + " must be a positive numeric ID.");
+    try {
+      return Long.valueOf(value);
+    } catch (NumberFormatException e) {
+      throw ApiException.invalid(key + " is out of range.");
+    }
+  }
+
   public static UUID uuid(JsonNode n, String key) {
     return n.hasNonNull(key) ? UUID.fromString(n.get(key).asText()) : null;
   }

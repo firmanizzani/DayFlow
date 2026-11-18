@@ -1,10 +1,9 @@
 package com.dayflow.task;
 
-import java.util.UUID;
 import org.springframework.data.jpa.repository.*;
 
-public interface TaskRepository extends JpaRepository<Task, UUID>, JpaSpecificationExecutor<Task> {
-  java.util.List<Task> findAllByUserId(UUID userId);
+public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificationExecutor<Task> {
+  java.util.List<Task> findAllByUserId(Long userId);
 
-  java.util.Optional<Task> findByIdAndUserId(UUID id, UUID userId);
+  java.util.Optional<Task> findByIdAndUserId(Long id, Long userId);
 }

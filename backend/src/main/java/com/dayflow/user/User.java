@@ -6,6 +6,7 @@ import java.time.*;
 
 @Entity
 @Table(name = "users")
+@AttributeOverride(name = "id", column = @Column(name = "user_id"))
 public class User extends BaseEntity {
   public String name;
   public String email;

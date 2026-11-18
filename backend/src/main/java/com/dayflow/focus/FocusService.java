@@ -24,16 +24,16 @@ public class FocusService {
     this.users = users;
   }
 
-  public FocusSession save(UUID user, JsonNode input) {
+  public FocusSession save(Long user, JsonNode input) {
     users.lockById(user).orElseThrow(ApiException::missing);
-    UUID clientId = uuid(input, "clientId");
+    java.util.UUID clientId = uuid(input, "clientId");
     if (clientId == null) throw ApiException.invalid("A unique client session ID is required.");
     var existing = sessions.findByUserIdAndClientId(user, clientId);
     if (existing.isPresent()) return existing.get();
     var session = new FocusSession();
     session.userId = user;
     session.clientId = clientId;
-    session.taskId = uuid(input, "taskId");
+    session.taskId = identifier(input, "taskId");
     if (session.taskId != null) tasks.owned(user, session.taskId);
     session.mode = choice(input, "mode", "FOCUS", "SHORT_BREAK", "LONG_BREAK");
     session.startedAt = instant(input, "startedAt");
@@ -51,7 +51,7 @@ public class FocusService {
     return sessions.save(session);
   }
 
-  public List<FocusSession> list(UUID user, Instant from, Instant to) {
+  public List<FocusSession> list(Long user, Instant from, Instant to) {
     com.dayflow.planner.PlannerService.validateRange(from, to);
     return sessions.findAllByUserId(user).stream()
         .filter(s -> !s.startedAt.isBefore(from) && s.startedAt.isBefore(to))
@@ -59,7 +59,7 @@ public class FocusService {
         .toList();
   }
 
-  public Map<String, Long> summary(UUID user, Instant from, Instant to) {
+  public Map<String, Long> summary(Long user, Instant from, Instant to) {
     var items = list(user, from, to).stream().filter(s -> s.mode.equals("FOCUS")).toList();
     return Map.of(
         "totalSeconds", items.stream().mapToLong(s -> s.durationSeconds).sum(),

@@ -29,37 +29,37 @@ public class InsightsController {
   @GetMapping("/dashboard/today")
   Map<String, Object> today(
       @AuthenticationPrincipal Jwt jwt, @RequestParam(required = false) LocalDate date) {
-    var user = UUID.fromString(jwt.getSubject());
+    var user = Long.valueOf(jwt.getSubject());
     return service.today(
         user, date == null ? LocalDate.now(ZoneId.of(users.get(user).timezone)) : date);
   }
 
   @GetMapping("/dashboard/unfinished")
   Map<String, Object> unfinished(@AuthenticationPrincipal Jwt jwt) {
-    return service.unfinished(UUID.fromString(jwt.getSubject()));
+    return service.unfinished(Long.valueOf(jwt.getSubject()));
   }
 
   @GetMapping("/insights/overview")
   InsightsService.Overview overview(
       @AuthenticationPrincipal Jwt jwt, @RequestParam Instant from, @RequestParam Instant to) {
-    return service.overview(UUID.fromString(jwt.getSubject()), from, to);
+    return service.overview(Long.valueOf(jwt.getSubject()), from, to);
   }
 
   @GetMapping("/insights/completion-trend")
   List<InsightsService.DayCount> trend(
       @AuthenticationPrincipal Jwt jwt, @RequestParam Instant from, @RequestParam Instant to) {
-    return service.trend(UUID.fromString(jwt.getSubject()), from, to);
+    return service.trend(Long.valueOf(jwt.getSubject()), from, to);
   }
 
   @GetMapping("/insights/categories")
   List<InsightsService.CategoryCount> categories(
       @AuthenticationPrincipal Jwt jwt, @RequestParam Instant from, @RequestParam Instant to) {
-    return service.categories(UUID.fromString(jwt.getSubject()), from, to);
+    return service.categories(Long.valueOf(jwt.getSubject()), from, to);
   }
 
   @GetMapping("/insights/focus")
   Map<String, Long> focus(
       @AuthenticationPrincipal Jwt jwt, @RequestParam Instant from, @RequestParam Instant to) {
-    return focus.summary(UUID.fromString(jwt.getSubject()), from, to);
+    return focus.summary(Long.valueOf(jwt.getSubject()), from, to);
   }
 }

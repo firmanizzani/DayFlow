@@ -6,6 +6,7 @@ import java.time.*;
 
 @Entity
 @Table(name = "user_preferences")
+@AttributeOverride(name = "id", column = @Column(name = "user_preference_id"))
 public class Preferences extends OwnedEntity {
   public String theme = "SYSTEM";
   public boolean notificationsEnabled;

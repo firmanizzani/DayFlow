@@ -37,7 +37,21 @@ public class SecurityConfig {
   @Bean
   JwtDecoder decoder(SecretKeySpec secret) {
     var decoder = NimbusJwtDecoder.withSecretKey(secret).macAlgorithm(MacAlgorithm.HS256).build();
-    decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer("dayflow"));
+    decoder.setJwtValidator(
+        new org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator<>(
+            JwtValidators.createDefaultWithIssuer("dayflow"),
+            new JwtClaimValidator<String>(
+                "sub",
+                subject -> {
+                  if (subject == null || !subject.matches("[1-9][0-9]*")) return false;
+                  try {
+                    return Long.parseLong(subject) > 0;
+                  } catch (NumberFormatException e) {
+                    return false;
+                  }
+                })));
+    // Old UUID access tokens receive 401, allowing the client to rotate its preserved refresh
+    // token.
     return decoder;
   }
 

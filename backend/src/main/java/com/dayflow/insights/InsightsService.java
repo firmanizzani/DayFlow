@@ -40,10 +40,10 @@ public class InsightsService {
       long totalFocusSeconds,
       int completionRate) {}
 
-  public Overview overview(UUID user, Instant from, Instant to) {
+  public Overview overview(Long user, Instant from, Instant to) {
     PlannerService.validateRange(from, to);
     var all = tasks.findAllByUserId(user);
-    Set<UUID> planned =
+    Set<Long> planned =
         sessions.findAllByUserId(user).stream()
             .filter(s -> !s.status.equals("CANCELLED") && !s.status.equals("RESCHEDULED"))
             .filter(s -> !s.startAt.isBefore(from) && s.startAt.isBefore(to))
@@ -68,7 +68,7 @@ public class InsightsService {
 
   public record DayCount(LocalDate date, long completedTasks) {}
 
-  public List<DayCount> trend(UUID user, Instant from, Instant to) {
+  public List<DayCount> trend(Long user, Instant from, Instant to) {
     PlannerService.validateRange(from, to);
     var zone = ZoneId.of(users.get(user).timezone);
     var all = tasks.findAllByUserId(user);
@@ -91,7 +91,7 @@ public class InsightsService {
 
   public record CategoryCount(String name, String color, long completedTasks) {}
 
-  public List<CategoryCount> categories(UUID user, Instant from, Instant to) {
+  public List<CategoryCount> categories(Long user, Instant from, Instant to) {
     PlannerService.validateRange(from, to);
     var completed =
         tasks.findAllByUserId(user).stream().filter(t -> completedIn(t, from, to)).toList();
@@ -111,7 +111,7 @@ public class InsightsService {
     return result;
   }
 
-  public Map<String, Object> today(UUID user, LocalDate date) {
+  public Map<String, Object> today(Long user, LocalDate date) {
     var zone = ZoneId.of(users.get(user).timezone);
     var from = date.atStartOfDay(zone).toInstant();
     var to = date.plusDays(1).atStartOfDay(zone).toInstant();
@@ -136,7 +136,7 @@ public class InsightsService {
             .toList());
   }
 
-  public Map<String, Object> unfinished(UUID user) {
+  public Map<String, Object> unfinished(Long user) {
     var now = Instant.now();
     return Map.of(
         "overdueTasks",

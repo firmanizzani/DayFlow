@@ -1,11 +1,10 @@
 package com.dayflow.planner;
 
-import java.util.UUID;
 import org.springframework.data.jpa.repository.*;
 
 public interface PlanningSessionRepository
-    extends JpaRepository<PlanningSession, UUID>, JpaSpecificationExecutor<PlanningSession> {
-  java.util.List<PlanningSession> findAllByUserId(UUID userId);
+    extends JpaRepository<PlanningSession, Long>, JpaSpecificationExecutor<PlanningSession> {
+  java.util.List<PlanningSession> findAllByUserId(Long userId);
 
-  java.util.Optional<PlanningSession> findByIdAndUserId(UUID id, UUID userId);
+  java.util.Optional<PlanningSession> findByIdAndUserId(Long id, Long userId);
 }

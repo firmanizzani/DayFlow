@@ -2,6 +2,14 @@
 
 Base path: `/api/v1`. Resource pengguna memerlukan `Authorization: Bearer ACCESS_TOKEN`. Payload dan response memakai JSON dengan nama field camelCase. Timestamp memakai ISO 8601 dengan offset/UTC; recurrence menggunakan tanggal kalender akun (`YYYY-MM-DD`).
 
+ID resource di database memakai `BIGINT GENERATED ALWAYS AS IDENTITY` dengan
+sequence terpisah untuk setiap tabel. Response API tetap mengirim ID sebagai
+string desimal, misalnya `"id": "42"` dan `"taskId": "17"`, agar tidak kehilangan
+presisi di JavaScript. Input referensi menerima string desimal positif atau
+integer JSON. `clientId` pada focus session tetap UUID untuk idempotensi.
+JWT menggunakan user ID numerik sebagai subject; access token UUID lama mendapat
+401 dan refresh token yang sudah ada dapat dipakai untuk mendapatkan sesi baru.
+
 | Modul                       | Method             | Path                                                                                          |
 | --------------------------- | ------------------ | --------------------------------------------------------------------------------------------- |
 | Health                      | GET                | `/health`                                                                                     |

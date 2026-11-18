@@ -165,7 +165,7 @@ public class AuthService {
             });
   }
 
-  public void changePassword(UUID id, String current, String next) {
+  public void changePassword(Long id, String current, String next) {
     validatePassword(next);
     var u = users.findById(id).orElseThrow(this::unauthorized);
     if (!passwords.matches(current, u.passwordHash)) throw unauthorized();

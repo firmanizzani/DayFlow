@@ -1,12 +1,16 @@
 package com.dayflow.common;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import jakarta.persistence.*;
 import java.time.Instant;
-import java.util.UUID;
 
 @MappedSuperclass
 public abstract class BaseEntity {
-  @Id public UUID id = UUID.randomUUID();
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @JsonSerialize(using = ToStringSerializer.class)
+  public Long id;
 
   @Column(nullable = false, updatable = false)
   public Instant createdAt = Instant.now();

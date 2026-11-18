@@ -6,7 +6,8 @@ import com.dayflow.common.ApiException;
 import com.dayflow.task.TaskService;
 import com.dayflow.user.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.nio.charset.StandardCharsets;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
@@ -33,15 +34,15 @@ public class RecurrenceService {
     this.users = users;
   }
 
-  public List<RecurringRule> list(UUID user) {
+  public List<RecurringRule> list(Long user) {
     return rules.findAllByUserId(user);
   }
 
-  public RecurringRule save(UUID user, UUID id, JsonNode input) {
+  public RecurringRule save(Long user, Long id, JsonNode input) {
     var rule = id == null ? new RecurringRule() : owned(user, id);
     rule.userId = user;
     if (id == null) {
-      rule.taskId = uuid(input, "taskId");
+      rule.taskId = identifier(input, "taskId");
       if (rule.taskId == null) throw ApiException.invalid("Choose a task.");
       tasks.owned(user, rule.taskId);
     }
@@ -108,15 +109,15 @@ public class RecurrenceService {
   }
 
   public record OccurrenceView(
-      UUID id,
-      UUID ruleId,
-      UUID taskId,
+      @JsonSerialize(using = ToStringSerializer.class) Long id,
+      @JsonSerialize(using = ToStringSerializer.class) Long ruleId,
+      @JsonSerialize(using = ToStringSerializer.class) Long taskId,
       LocalDate occurrenceDate,
       String title,
       String status,
       Instant completedAt) {}
 
-  public List<OccurrenceView> occurrences(UUID user, LocalDate from, LocalDate to) {
+  public List<OccurrenceView> occurrences(Long user, LocalDate from, LocalDate to) {
     if (to.isBefore(from) || ChronoUnit.DAYS.between(from, to) > 93) {
       throw ApiException.invalid("Choose a recurrence window of at most 93 days.");
     }
@@ -133,9 +134,6 @@ public class RecurrenceService {
                 .orElseGet(
                     () -> {
                       var next = new Occurrence();
-                      next.id =
-                          UUID.nameUUIDFromBytes(
-                              (rule.id + ":" + occurrenceDate).getBytes(StandardCharsets.UTF_8));
                       next.userId = user;
                       next.ruleId = rule.id;
                       next.occurrenceDate = occurrenceDate;
@@ -156,7 +154,7 @@ public class RecurrenceService {
     return result;
   }
 
-  public Occurrence updateOccurrence(UUID user, UUID id, JsonNode input) {
+  public Occurrence updateOccurrence(Long user, Long id, JsonNode input) {
     var occurrence = occurrences.findByIdAndUserId(id, user).orElseThrow(ApiException::missing);
     if (input.has("title")) occurrence.titleOverride = text(input, "title", 150);
     if (input.has("status")) {
@@ -166,13 +164,13 @@ public class RecurrenceService {
     return occurrences.save(occurrence);
   }
 
-  public void stop(UUID user, UUID id) {
+  public void stop(Long user, Long id) {
     var rule = owned(user, id);
     rule.active = false;
     rules.save(rule);
   }
 
-  private RecurringRule owned(UUID user, UUID id) {
+  private RecurringRule owned(Long user, Long id) {
     return rules.findByIdAndUserId(id, user).orElseThrow(ApiException::missing);
   }
 }

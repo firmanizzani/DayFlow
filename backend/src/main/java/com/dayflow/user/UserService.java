@@ -20,11 +20,11 @@ public class UserService {
     this.preferences = preferences;
   }
 
-  public User get(UUID id) {
+  public User get(Long id) {
     return users.findById(id).orElseThrow(ApiException::missing);
   }
 
-  public User update(UUID id, JsonNode input) {
+  public User update(Long id, JsonNode input) {
     var user = get(id);
     if (input.has("name")) user.name = text(input, "name", 100);
     if (input.has("timezone")) {
@@ -34,13 +34,13 @@ public class UserService {
     return users.save(user);
   }
 
-  public Preferences preferences(UUID user) {
+  public Preferences preferences(Long user) {
     return preferences.findAllByUserId(user).stream()
         .findFirst()
         .orElseThrow(ApiException::missing);
   }
 
-  public Preferences updatePreferences(UUID user, JsonNode input) {
+  public Preferences updatePreferences(Long user, JsonNode input) {
     var p = preferences(user);
     if (input.has("theme")) p.theme = choice(input, "theme", "LIGHT", "DARK", "SYSTEM");
     if (input.has("notificationsEnabled")) {
@@ -60,7 +60,7 @@ public class UserService {
     return preferences.save(p);
   }
 
-  public void delete(UUID user) {
+  public void delete(Long user) {
     users.delete(get(user));
   }
 }

@@ -39,6 +39,10 @@ try {
     assert.equal(session.user.passwordHash, undefined);
   }
   const [a, b] = accounts;
+  for (const account of accounts) {
+    assert.match(account.user.id, /^[1-9][0-9]*$/);
+    assert.equal(typeof account.user.id, 'string');
+  }
   const token = a.accessToken;
   const category = await request('/categories', {
     token,
@@ -65,6 +69,17 @@ try {
     body: { title: 'End-to-end task', categoryId: category.id, priority: 'HIGH' },
   });
   assert.equal(task.dueAt, null);
+  assert.match(task.id, /^[1-9][0-9]*$/);
+  assert.match(category.id, /^[1-9][0-9]*$/);
+  assert.equal(task.categoryId, category.id);
+  for (const categoryId of [randomUUID(), '-1', '1.5', '9223372036854775808']) {
+    await request('/tasks', {
+      token,
+      method: 'POST',
+      expected: 422,
+      body: { title: 'Invalid numeric reference', categoryId },
+    });
+  }
   for (const method of ['GET', 'PATCH', 'DELETE']) {
     await request(`/tasks/${task.id}`, {
       token: b.accessToken,
@@ -186,6 +201,9 @@ try {
   const occurrenceQuery = `/recurring-occurrences?from=${date}&to=${date}`;
   const occurrences = await request(occurrenceQuery, { token });
   assert.equal(occurrences.length, 1);
+  assert.match(occurrences[0].id, /^[1-9][0-9]*$/);
+  assert.equal(occurrences[0].ruleId, rule.id);
+  assert.equal(occurrences[0].taskId, routine.id);
   await request(`/recurring-occurrences/${occurrences[0].id}`, {
     token,
     method: 'PATCH',
@@ -222,6 +240,8 @@ try {
     body: focusBody,
   });
   assert.equal(duplicate.id, focus.id);
+  assert.match(focus.id, /^[1-9][0-9]*$/);
+  assert.equal(focus.clientId, focusBody.clientId, 'Client idempotency key remains UUID');
   const summary = await request(`/focus-sessions/summary?${range}`, { token });
   assert.equal(summary.totalSeconds, 120);
   await request('/users/me/preferences', {
@@ -255,6 +275,20 @@ try {
   });
   await request(`/tasks/${task.id}`, { token, method: 'DELETE', expected: 204 });
   assert.equal((await request(`/planning-sessions?${range}`, { token })).length, 0);
+  const concurrent = await Promise.all(
+    ['First identity', 'Second identity'].map((title) =>
+      request('/tasks', { token, method: 'POST', expected: 201, body: { title } }),
+    ),
+  );
+  assert.notEqual(concurrent[0].id, concurrent[1].id);
+  const highest = concurrent.map((item) => BigInt(item.id)).reduce((x, y) => x > y ? x : y);
+  for (const item of concurrent) {
+    await request(`/tasks/${item.id}`, { token, method: 'DELETE', expected: 204 });
+  }
+  const next = await request('/tasks', {
+    token, method: 'POST', expected: 201, body: { title: 'Identity after deletion' },
+  });
+  assert.ok(BigInt(next.id) > highest, 'Deleted IDs must never be reused');
   console.log(
     `PASS: ${checks} API checks against PostgreSQL. Test accounts will now be deleted.`,
   );

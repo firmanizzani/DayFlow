@@ -1,14 +1,13 @@
 package com.dayflow.recurrence;
 
-import java.util.UUID;
 import org.springframework.data.jpa.repository.*;
 
 public interface OccurrenceRepository
-    extends JpaRepository<Occurrence, UUID>, JpaSpecificationExecutor<Occurrence> {
-  java.util.List<Occurrence> findAllByUserId(UUID userId);
+    extends JpaRepository<Occurrence, Long>, JpaSpecificationExecutor<Occurrence> {
+  java.util.List<Occurrence> findAllByUserId(Long userId);
 
-  java.util.Optional<Occurrence> findByIdAndUserId(UUID id, UUID userId);
+  java.util.Optional<Occurrence> findByIdAndUserId(Long id, Long userId);
 
   java.util.Optional<Occurrence> findByRuleIdAndOccurrenceDate(
-      UUID ruleId, java.time.LocalDate date);
+      Long ruleId, java.time.LocalDate date);
 }
