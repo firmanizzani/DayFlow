@@ -72,6 +72,9 @@ const fixture = [
 ].join('\n');
 const v1 = fs.readFileSync('backend/src/main/resources/db/migration/V1__initial_schema.sql', 'utf8');
 const v2 = fs.readFileSync('backend/src/main/resources/db/migration/V2__sequential_entity_ids.sql', 'utf8');
+const v3 = fs.readFileSync('backend/src/main/resources/db/migration/V3__primary_key_columns_first.sql', 'utf8');
+const v4 = fs.readFileSync('backend/src/main/resources/db/migration/V4__group_foreign_keys_and_timestamps.sql', 'utf8');
+const v5 = fs.readFileSync('backend/src/main/resources/db/migration/V5__remove_legacy_uuid_columns.sql', 'utf8');
 const schema = `id_test_${randomUUID().replaceAll('-', '')}`;
 fs.writeFileSync('.local/test-id-migration.sql', `
 BEGIN;
@@ -81,6 +84,8 @@ ${v1}
 ${fixture}
 CREATE TEMP TABLE before_ids ON COMMIT DROP AS ${fingerprint(false)}
 ${v2}
+${v3}
+${v4}
 CREATE TEMP TABLE after_ids ON COMMIT DROP AS ${fingerprint(true)}
 DO $$
 BEGIN
@@ -92,11 +97,37 @@ BEGIN
       WHERE table_schema = '${schema}' AND is_identity = 'YES') <> 11 THEN
     RAISE EXCEPTION 'Expected 11 independent identity columns';
   END IF;
+  IF (SELECT array_agg(column_name::text ORDER BY ordinal_position)
+      FROM information_schema.columns
+      WHERE table_schema = '${schema}' AND table_name = 'tasks')
+      IS DISTINCT FROM ARRAY[
+        'task_id', 'user_id', 'category_id', 'title', 'description',
+        'priority', 'status', 'due_at', 'completed_at',
+        'created_at', 'updated_at', 'legacy_uuid'
+      ] THEN
+    RAISE EXCEPTION 'Task columns must group primary key, foreign keys, data and timestamps';
+  END IF;
 END $$;
--- Identity insertion, nullable legacy UUID, category SET NULL and task CASCADE.
+${v5}
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+      WHERE table_schema = '${schema}' AND column_name = 'legacy_uuid') THEN
+    RAISE EXCEPTION 'Legacy UUID columns must be removed from every table';
+  END IF;
+  IF (SELECT array_agg(column_name::text ORDER BY ordinal_position)
+      FROM information_schema.columns
+      WHERE table_schema = '${schema}' AND table_name = 'tasks')
+      IS DISTINCT FROM ARRAY[
+        'task_id', 'user_id', 'category_id', 'title', 'description',
+        'priority', 'status', 'due_at', 'completed_at', 'created_at', 'updated_at'
+      ] THEN
+    RAISE EXCEPTION 'Removing audit columns must preserve the requested layout';
+  END IF;
+END $$;
+-- Identity insertion after audit removal, category SET NULL and task CASCADE.
 INSERT INTO categories (user_id, name, color, created_at, updated_at)
 SELECT user_id, 'New identity', '#123456', now(), now() FROM users;
-DELETE FROM categories WHERE legacy_uuid IS NOT NULL;
+DELETE FROM categories WHERE name = 'Fixture';
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM tasks WHERE category_id IS NOT NULL) THEN
     RAISE EXCEPTION 'Category deletion did not clear task reference';
