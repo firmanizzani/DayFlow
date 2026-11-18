@@ -1,0 +1,10 @@
+node_modules
+package-lock.json
+.tools
+.local
+target
+dist
+.expo
+prd.md
+prompt.md
+backend/.env
