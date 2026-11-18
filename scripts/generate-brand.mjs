@@ -24,4 +24,18 @@ await sharp(Buffer.from(icon))
 await sharp(Buffer.from(splash))
   .png()
   .toFile(fileURLToPath(new URL('splash.png', assets)));
-console.log('Generated Dayflow icon and splash from the native brand symbol.');
+const darkSplash = splash
+  .replaceAll('#7366F0', '#A99BFF')
+  .replaceAll('#FFFFFF', '#24203F');
+await sharp(Buffer.from(darkSplash))
+  .png()
+  .toFile(fileURLToPath(new URL('splash-dark.png', assets)));
+const favicon = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 32 32">
+  <circle cx="16" cy="16" r="15" fill="#7366F0"/>
+  <path d="M8 18a8 8 0 0 1 16 0M8 22h16M16 6v3M6 11l2 2M26 11l-2 2"
+    stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+</svg>`;
+await sharp(Buffer.from(favicon))
+  .png()
+  .toFile(fileURLToPath(new URL('favicon.png', assets)));
+console.log('Generated Dayflow icon, splash assets and favicon from the brand symbol.');

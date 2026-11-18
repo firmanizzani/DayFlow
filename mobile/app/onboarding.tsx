@@ -39,7 +39,7 @@ export default function Onboarding() {
   }, [contentWidth]);
   async function finish() {
     await useSession.getState().finishOnboarding();
-    router.replace('/(auth)/register');
+    router.replace('/(auth)/login');
   }
   function next() {
     const selected = Math.min(2, page + 1);
