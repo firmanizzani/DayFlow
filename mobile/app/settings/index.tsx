@@ -1,93 +1,49 @@
-import { useEffect, useState } from 'react';
-import { Alert, Linking, Switch, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, Linking, Pressable, Switch, View } from 'react-native';
 import { router } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
+import { Bell, Timer, Layers, ShieldCheck, ChevronRight } from 'lucide-react-native';
 import {
   Screen,
   Header,
   Label,
-  Field,
   Button,
   Section,
   Chips,
   ErrorNotice,
-  Surface,
 } from '@/components/ui';
-import { api, mutate, queryClient } from '@/services/api';
-import { clearReminders, requestReminderPermission } from '@/services/notifications';
+import { SettingsGroup, SettingsRow } from '@/components/SettingsRow';
+import { api, mutate } from '@/services/api';
+import { endLocalSession } from '@/services/account';
+import { requestReminderPermission } from '@/services/notifications';
 import { usePreferences, useTheme } from '@/theme';
 import { useSession } from '@/store/session';
-import { useFocus } from '@/store/focus';
-import type { User } from '@/types';
 
 export default function Settings() {
-  const session = useSession();
+  const user = useSession((state) => state.user);
   const theme = useTheme();
   const preferences = usePreferences();
-  const [name, setName] = useState(session.user?.name ?? '');
-  const [timezone, setTimezone] = useState(session.user?.timezone ?? 'UTC');
-  const [focus, setFocus] = useState('25');
-  const [shortBreak, setShortBreak] = useState('5');
-  const [longBreak, setLongBreak] = useState('15');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
   const [permissionMessage, setPermissionMessage] = useState('');
-  useEffect(() => {
-    if (!preferences.data) return;
-    setFocus(String(preferences.data.focusMinutes));
-    setShortBreak(String(preferences.data.shortBreakMinutes));
-    setLongBreak(String(preferences.data.longBreakMinutes));
-  }, [preferences.data]);
   const update = useMutation({
     mutationFn: (body: unknown) => mutate('/users/me/preferences', 'PATCH', body),
   });
-  const profile = useMutation({
-    mutationFn: async () => {
-      const user = await mutate<User>('/users/me', 'PATCH', { name, timezone });
-      const latest = useSession.getState();
-      if (latest.accessToken && latest.refreshToken)
-        await latest.setSession({
-          user,
-          accessToken: latest.accessToken,
-          refreshToken: latest.refreshToken,
-        });
-    },
-  });
-  async function exit() {
-    await clearReminders();
-    useFocus.getState().clear();
-    await session.clear();
-    queryClient.clear();
-    router.replace('/(auth)/login');
-  }
   const logout = useMutation({
     mutationFn: () =>
       api('/auth/logout', {
         method: 'POST',
         anonymous: true,
-        body: { refreshToken: session.refreshToken },
+        body: { refreshToken: useSession.getState().refreshToken },
       }),
-    onSuccess: exit,
+    onSettled: endLocalSession,
   });
   const remove = useMutation({
     mutationFn: () => api('/users/me', { method: 'DELETE' }),
-    onSuccess: exit,
-  });
-  const password = useMutation({
-    mutationFn: () =>
-      api('/users/me/password', {
-        method: 'POST',
-        body: { currentPassword, newPassword },
-      }),
-    onSuccess: () => {
-      setCurrentPassword('');
-      setNewPassword('');
-    },
+    onSuccess: endLocalSession,
   });
   async function toggleNotifications(enabled: boolean) {
     if (enabled && !(await requestReminderPermission())) {
       setPermissionMessage(
-        'Notifications are unavailable or permission was denied. You can enable permission in your device settings.',
+        'Notifications are unavailable or permission was denied. Enable permission in your device settings.',
       );
       return;
     }
@@ -96,152 +52,128 @@ export default function Settings() {
   }
   return (
     <Screen>
-      <Header back title="Your space." subtitle={session.user?.email} />
-      <Section title="Profile">
-        <Field label="Full name" value={name} onChangeText={setName} />
-        <Field
-          label="Timezone"
-          value={timezone}
-          onChangeText={setTimezone}
-          autoCapitalize="none"
-        />
-        <Label muted size={12}>
-          Use an IANA timezone, for example Asia/Jakarta or Asia/Bangkok.
-        </Label>
-        <Button
-          secondary
-          title="Save profile"
-          busy={profile.isPending}
-          onPress={() => profile.mutate()}
-        />
-        {profile.isSuccess && <Label color={theme.success}>Profile saved.</Label>}
-      </Section>
-      <Section title="Make it yours">
-        <Chips
-          values={['LIGHT', 'DARK', 'SYSTEM'] as const}
-          value={preferences.data?.theme ?? 'SYSTEM'}
-          onChange={(value) => update.mutate({ theme: value })}
-        />
-      </Section>
-      <Section title="A gentle nudge">
+      <Header back title="Settings" />
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => router.push('/settings/profile')}
+        style={{
+          backgroundColor: theme.surface,
+          borderRadius: 22,
+          padding: 20,
+          borderWidth: 1,
+          borderColor: theme.border,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 16,
+        }}
+      >
         <View
           style={{
-            flexDirection: 'row',
+            width: 58,
+            height: 58,
+            borderRadius: 29,
+            backgroundColor: theme.soft,
+            justifyContent: 'center',
             alignItems: 'center',
-            justifyContent: 'space-between',
           }}
         >
-          <Label>Enable reminders</Label>
-          <Switch
-            accessibilityLabel="Enable reminders"
-            value={preferences.data?.notificationsEnabled ?? false}
-            onValueChange={toggleNotifications}
-            trackColor={{ true: theme.primary }}
-          />
+          <Label size={27} bold color={theme.primary}>
+            {user?.name.slice(0, 1).toUpperCase()}
+          </Label>
         </View>
-        {!!permissionMessage && (
-          <>
-            <Label muted>{permissionMessage}</Label>
-            <Button
-              secondary
-              title="Open device settings"
-              onPress={() => {
-                void Linking.openSettings();
-              }}
-            />
-          </>
-        )}
-        <Label size={14} bold>
-          Default reminder (minutes before)
-        </Label>
+        <View style={{ flex: 1, gap: 4 }}>
+          <Label bold size={18}>
+            {user?.name}
+          </Label>
+          <Label muted size={13} lines={1}>
+            {user?.email}
+          </Label>
+        </View>
+        <ChevronRight size={18} color={theme.muted} />
+      </Pressable>
+      <Section title="Appearance">
         <Chips
-          values={['0', '5', '15', '30', '60']}
-          value={String(preferences.data?.defaultReminder ?? 15)}
-          onChange={(value) => update.mutate({ defaultReminder: Number(value) })}
+          values={['Light', 'Dark', 'System']}
+          value={
+            preferences.data?.theme === 'LIGHT'
+              ? 'Light'
+              : preferences.data?.theme === 'DARK'
+                ? 'Dark'
+                : 'System'
+          }
+          onChange={(value) => update.mutate({ theme: value.toUpperCase() })}
         />
       </Section>
-      <Section title="Find your pace">
-        <Field
-          label="Focus duration (1–180 minutes)"
-          keyboardType="number-pad"
-          value={focus}
-          onChangeText={setFocus}
-        />
-        <Field
-          label="Short break (1–60 minutes)"
-          keyboardType="number-pad"
-          value={shortBreak}
-          onChangeText={setShortBreak}
-        />
-        <Field
-          label="Long break (1–120 minutes)"
-          keyboardType="number-pad"
-          value={longBreak}
-          onChangeText={setLongBreak}
-        />
-        <Button
-          secondary
-          title="Save focus preferences"
-          busy={update.isPending}
-          onPress={() =>
-            update.mutate({
-              focusMinutes: Number(focus),
-              shortBreakMinutes: Number(shortBreak),
-              longBreakMinutes: Number(longBreak),
-            })
+      <SettingsGroup>
+        <SettingsRow
+          icon={Bell}
+          title="Reminders"
+          detail="A little nudge for your plans"
+          trailing={
+            <Switch
+              accessibilityLabel="Enable reminders"
+              value={preferences.data?.notificationsEnabled ?? false}
+              onValueChange={toggleNotifications}
+              trackColor={{ true: theme.primary }}
+            />
           }
         />
-      </Section>
-      <Button
-        secondary
-        title="Manage categories"
-        onPress={() => router.push('/settings/categories')}
-      />
-      <Section title="Account security">
-        <Field
-          label="Current password"
-          value={currentPassword}
-          onChangeText={setCurrentPassword}
-          secureTextEntry
+        <SettingsRow
+          icon={Timer}
+          title="Focus duration"
+          detail={'Default: ' + (preferences.data?.focusMinutes ?? 25) + ' minutes'}
+          onPress={() => router.push('/settings/focus-preferences')}
         />
-        <Field
-          label="New password"
-          value={newPassword}
-          onChangeText={setNewPassword}
-          secureTextEntry
+        <SettingsRow
+          icon={Layers}
+          title="Task categories"
+          detail="Make space for work and life"
+          onPress={() => router.push('/settings/categories')}
+          last
         />
-        <Button
-          secondary
-          title="Change password"
-          busy={password.isPending}
-          onPress={() => password.mutate()}
-        />
-        {password.isSuccess && (
-          <Label color={theme.success}>
-            Password changed. Other refresh sessions have been revoked.
+      </SettingsGroup>
+      {!!permissionMessage && (
+        <>
+          <Label muted>{permissionMessage}</Label>
+          <Button
+            secondary
+            title="Open device settings"
+            onPress={() => {
+              void Linking.openSettings();
+            }}
+          />
+        </>
+      )}
+      {preferences.data?.notificationsEnabled && (
+        <Section title="Remind me before my plan">
+          <Chips
+            values={['0', '5', '15', '30', '60']}
+            value={String(preferences.data.defaultReminder)}
+            onChange={(value) => update.mutate({ defaultReminder: Number(value) })}
+          />
+          <Label muted size={12}>
+            Minutes before the start. Zero means at start time.
           </Label>
-        )}
-      </Section>
-      <ErrorNotice
-        error={
-          preferences.error ??
-          update.error ??
-          profile.error ??
-          password.error ??
-          logout.error ??
-          remove.error
-        }
-      />
+        </Section>
+      )}
+      <SettingsGroup>
+        <SettingsRow
+          icon={ShieldCheck}
+          title="Account security"
+          detail="Change your password"
+          onPress={() => router.push('/settings/security')}
+          last
+        />
+      </SettingsGroup>
+      <ErrorNotice error={preferences.error ?? update.error ?? remove.error} />
       <Button
         secondary
         title="Sign out"
         busy={logout.isPending}
         onPress={() => logout.mutate()}
       />
-      <Button
-        danger
-        title="Delete my account"
-        busy={remove.isPending}
+      <Pressable
+        accessibilityRole="button"
         onPress={() =>
           Alert.alert(
             'Delete your account?',
@@ -256,7 +188,12 @@ export default function Settings() {
             ],
           )
         }
-      />
+        style={{ minHeight: 44, justifyContent: 'center', alignItems: 'center' }}
+      >
+        <Label size={13} color={theme.danger}>
+          Delete my account
+        </Label>
+      </Pressable>
     </Screen>
   );
 }

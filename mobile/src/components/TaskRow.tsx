@@ -17,6 +17,7 @@ import { mutate } from '@/services/api';
 import { useTheme } from '@/theme';
 import { shortDate } from '@/utils/date';
 import type { Task, Category } from '@/types';
+import Svg, { Path } from 'react-native-svg';
 
 export function TaskRow({
   task,
@@ -55,8 +56,27 @@ export function TaskRow({
   return (
     <Animated.View
       layout={LinearTransition.duration(200).reduceMotion(ReduceMotion.System)}
-      style={{ backgroundColor: theme.surface, padding: 16, borderRadius: 18, gap: 8 }}
+      style={{
+        backgroundColor: theme.surface,
+        padding: 16,
+        borderRadius: 18,
+        gap: 8,
+        overflow: 'hidden',
+      }}
     >
+      <Svg
+        width={76}
+        height={62}
+        viewBox="0 0 76 62"
+        pointerEvents="none"
+        style={{ position: 'absolute', top: 0, right: 0 }}
+      >
+        <Path
+          d="M31 0H76V56C58 43 32 65 12 56C5 37 10 12 31 0Z"
+          fill={category?.color ?? (done ? '#35B895' : '#A99BFF')}
+          opacity={theme.isDark ? 0.18 : 0.12}
+        />
+      </Svg>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <Pressable
           accessibilityRole="checkbox"
@@ -107,20 +127,27 @@ export function TaskRow({
             }}
           >
             {category && (
-              <Label size={12} color={theme.primary}>
-                {category.name}
-              </Label>
+              <View
+                style={{
+                  backgroundColor: theme.soft,
+                  borderRadius: 7,
+                  paddingHorizontal: 8,
+                  paddingVertical: 2,
+                }}
+              >
+                <Label size={12} color={theme.primary}>
+                  {category.name}
+                </Label>
+              </View>
             )}
             {task.dueAt && (
               <Label size={12} muted>
                 Due {shortDate(task.dueAt)}
               </Label>
             )}
-            {task.totalSubtasks > 0 && (
-              <Label size={12} muted>
-                {task.completedSubtasks}/{task.totalSubtasks} steps
-              </Label>
-            )}
+            <Label size={12} muted>
+              {task.priority.toLowerCase()} priority
+            </Label>
             {task.priority === 'HIGH' && <Flag size={13} color={theme.danger} />}
             {task.status === 'IN_PROGRESS' && (
               <Label size={12} color={theme.primary}>
@@ -130,6 +157,32 @@ export function TaskRow({
           </View>
         </Pressable>
       </View>
+      {task.totalSubtasks > 0 && (
+        <View
+          style={{
+            marginLeft: 54,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
+          <View
+            style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: theme.soft }}
+          >
+            <View
+              style={{
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: theme.primary,
+                width: `${(task.completedSubtasks / task.totalSubtasks) * 100}%`,
+              }}
+            />
+          </View>
+          <Label size={12} muted>
+            {task.completedSubtasks}/{task.totalSubtasks}
+          </Label>
+        </View>
+      )}
       {planAction && (
         <Pressable
           onPress={() =>

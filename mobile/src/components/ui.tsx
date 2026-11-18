@@ -16,6 +16,7 @@ import { ArrowLeft, ArrowRight, CalendarDays } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useTheme } from '@/theme';
 import { addDays, dateKey, weekDates } from '@/utils/date';
+import Svg, { Path } from 'react-native-svg';
 
 export function Label({
   children,
@@ -23,15 +24,22 @@ export function Label({
   size = 15,
   bold = false,
   color,
+  heading = false,
+  lines,
 }: PropsWithChildren<{
   muted?: boolean;
   size?: number;
   bold?: boolean;
   color?: string;
+  heading?: boolean;
+  lines?: number;
 }>) {
   const theme = useTheme();
   return (
     <Text
+      accessibilityRole={heading ? 'header' : undefined}
+      numberOfLines={lines}
+      ellipsizeMode="middle"
       style={{
         color: color ?? (muted ? theme.muted : theme.ink),
         fontSize: size,
@@ -61,6 +69,21 @@ export function Screen({
       edges={['top', 'left', 'right']}
       style={{ flex: 1, backgroundColor: theme.background }}
     >
+      <Svg
+        width="100%"
+        height={220}
+        viewBox="0 0 400 220"
+        preserveAspectRatio="none"
+        pointerEvents="none"
+        style={{ position: 'absolute', top: 0, right: 0 }}
+      >
+        <Path d="M86 0H400V185C290 136 255 50 86 0Z" fill={theme.soft} opacity={0.62} />
+        <Path
+          d="M250 0H400V116C362 102 301 53 250 0Z"
+          fill={theme.primary}
+          opacity={0.055}
+        />
+      </Svg>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -69,9 +92,9 @@ export function Screen({
           <ScrollView
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{
-              padding: 24,
+              padding: 20,
               paddingBottom: 44,
-              gap: 24,
+              gap: 20,
               maxWidth: 680,
               width: '100%',
               alignSelf: 'center',
@@ -132,7 +155,7 @@ export function Header({
         }}
       >
         <View style={{ flex: 1, gap: 4 }}>
-          <Label size={titleSize} bold>
+          <Label size={titleSize} bold heading>
             {title}
           </Label>
           {subtitle && <Label muted>{subtitle}</Label>}
@@ -367,38 +390,44 @@ export function Chips<T extends string>({
 export function WeekStrip({
   date,
   onChange,
+  navigation = true,
+  markedDates = [],
 }: {
   date: Date;
   onChange: (date: Date) => void;
+  navigation?: boolean;
+  markedDates?: string[];
 }) {
   const theme = useTheme();
   return (
     <View style={{ gap: 12 }}>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <Pressable
-          accessibilityLabel="Previous week"
-          onPress={() => onChange(addDays(date, -7))}
-          style={{ padding: 10 }}
+      {navigation && (
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
         >
-          <ArrowLeft color={theme.muted} size={18} />
-        </Pressable>
-        <Label bold>
-          {date.toLocaleDateString([], { month: 'long', year: 'numeric' })}
-        </Label>
-        <Pressable
-          accessibilityLabel="Next week"
-          onPress={() => onChange(addDays(date, 7))}
-          style={{ padding: 10 }}
-        >
-          <ArrowRight color={theme.muted} size={18} />
-        </Pressable>
-      </View>
+          <Pressable
+            accessibilityLabel="Previous week"
+            onPress={() => onChange(addDays(date, -7))}
+            style={{ padding: 10 }}
+          >
+            <ArrowLeft color={theme.muted} size={18} />
+          </Pressable>
+          <Label bold>
+            {date.toLocaleDateString([], { month: 'long', year: 'numeric' })}
+          </Label>
+          <Pressable
+            accessibilityLabel="Next week"
+            onPress={() => onChange(addDays(date, 7))}
+            style={{ padding: 10 }}
+          >
+            <ArrowRight color={theme.muted} size={18} />
+          </Pressable>
+        </View>
+      )}
       <View style={{ flexDirection: 'row', gap: 4 }}>
         {weekDates(date).map((day) => {
           const active = dateKey(day) === dateKey(date);
@@ -410,19 +439,31 @@ export function WeekStrip({
               onPress={() => onChange(day)}
               style={{
                 flex: 1,
-                paddingVertical: 12,
+                paddingVertical: 10,
                 alignItems: 'center',
                 gap: 8,
                 borderRadius: 18,
-                backgroundColor: active ? theme.primary : theme.surface,
+                backgroundColor: active ? theme.primary : 'transparent',
               }}
             >
-              <Label size={11} color={active ? theme.primaryInk : theme.muted}>
+              <Label size={12} color={active ? theme.primaryInk : theme.muted}>
                 {day.toLocaleDateString('en', { weekday: 'short' })}
               </Label>
               <Label size={17} bold color={active ? theme.primaryInk : theme.ink}>
                 {day.getDate()}
               </Label>
+              <View
+                style={{
+                  width: 4,
+                  height: 4,
+                  borderRadius: 2,
+                  backgroundColor: markedDates.includes(dateKey(day))
+                    ? active
+                      ? theme.primaryInk
+                      : theme.primary
+                    : 'transparent',
+                }}
+              />
             </Pressable>
           );
         })}

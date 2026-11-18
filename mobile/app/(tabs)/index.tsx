@@ -101,15 +101,14 @@ export default function Today() {
         plans={dashboard.data?.sessions ?? []}
         tasks={plannedTasks.data ?? []}
       />
-      <WeekStrip date={date} onChange={setDate} />
-      <View style={{ flexDirection: 'row', gap: 12 }}>
-        <View style={{ flex: 1 }}>
-          <Button title="Add task" onPress={() => router.push('/tasks/edit')} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Button secondary title="Find focus" onPress={() => router.push('/focus')} />
-        </View>
-      </View>
+      <WeekStrip
+        date={date}
+        onChange={setDate}
+        navigation={false}
+        markedDates={
+          dashboard.data?.sessions.map((plan) => dateKey(new Date(plan.startAt))) ?? []
+        }
+      />
       <ErrorNotice error={dashboard.error} retry={() => dashboard.refetch()} />
       {dashboard.isLoading ? (
         <Loading />
@@ -127,6 +126,18 @@ export default function Today() {
                 categories={categories.data}
               />
             </Section>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <View style={{ flex: 1 }}>
+                <Button title="Add task" onPress={() => router.push('/tasks/edit')} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Button
+                  secondary
+                  title="Find focus"
+                  onPress={() => router.push('/focus')}
+                />
+              </View>
+            </View>
             <Section
               title="Still on your mind"
               action="View all"

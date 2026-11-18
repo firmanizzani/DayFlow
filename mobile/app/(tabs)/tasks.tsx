@@ -14,6 +14,7 @@ import {
   ErrorNotice,
 } from '@/components/ui';
 import { TaskRow } from '@/components/TaskRow';
+import { TaskSummary } from '@/components/TaskSummary';
 import { api, params } from '@/services/api';
 import { useTheme } from '@/theme';
 import type { Page, Task, Category } from '@/types';
@@ -65,7 +66,7 @@ export default function Tasks() {
         data={tasks}
         keyExtractor={(task) => task.id}
         contentContainerStyle={{
-          padding: 24,
+          padding: 20,
           paddingBottom: 40,
           gap: 12,
           maxWidth: 680,
@@ -98,6 +99,7 @@ export default function Tasks() {
                 </Pressable>
               }
             />
+            <TaskSummary onFilter={setStatus} />
             <View
               style={{
                 flexDirection: 'row',

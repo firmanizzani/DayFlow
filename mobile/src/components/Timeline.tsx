@@ -1,6 +1,7 @@
 import { View, Pressable } from 'react-native';
 import { router } from 'expo-router';
-import { Check, ArrowUpRight } from 'lucide-react-native';
+import { Check, ArrowUpRight, ListTodo } from 'lucide-react-native';
+import { FlowMotif } from './FlowMotif';
 import { Label, Empty } from './ui';
 import { useTheme } from '@/theme';
 import { timeLabel } from '@/utils/date';
@@ -58,8 +59,9 @@ export function Timeline({
               <View
                 style={{
                   width: 1,
-                  flex: 1,
-                  minHeight: 35,
+                  position: 'absolute',
+                  top: 34,
+                  bottom: -16,
                   backgroundColor: theme.border,
                 }}
               />
@@ -79,8 +81,9 @@ export function Timeline({
                       60000,
                   ),
                 ),
-                padding: 18,
-                borderRadius: 20,
+                padding: 16,
+                borderRadius: 16,
+                overflow: 'hidden',
                 backgroundColor: category
                   ? `${category.color}${theme.isDark ? '28' : '16'}`
                   : theme.soft,
@@ -88,6 +91,7 @@ export function Timeline({
                 gap: 8,
               })}
             >
+              <FlowMotif color={category?.color ?? '#A99BFF'} opacity={0.12} />
               <View
                 style={{
                   flexDirection: 'row',
@@ -95,6 +99,7 @@ export function Timeline({
                   gap: 12,
                 }}
               >
+                <ListTodo size={19} color={theme.primary} />
                 <Label bold>{task?.title ?? 'Scheduled task'}</Label>
                 {plan.status === 'COMPLETED' ? (
                   <Check size={18} color={theme.success} />

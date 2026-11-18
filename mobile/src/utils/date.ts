@@ -18,7 +18,11 @@ export function weekDates(date: Date) {
 }
 
 export function timeLabel(value: string | Date) {
-  return new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return new Date(value).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  });
 }
 
 export function shortDate(value: string | Date) {

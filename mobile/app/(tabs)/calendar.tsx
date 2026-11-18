@@ -26,6 +26,11 @@ export default function Calendar() {
   const theme = useTheme();
   const [date, setDate] = useState(new Date());
   const [view, setView] = useState('Month');
+  function move(direction: number) {
+    if (view === 'Month')
+      setDate(new Date(date.getFullYear(), date.getMonth() + direction, 1));
+    else setDate(addDays(date, direction * (view === 'Week' ? 7 : 1)));
+  }
   const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
   const gridStart = addDays(monthStart, -((monthStart.getDay() + 6) % 7));
   const grid = Array.from({ length: 42 }, (_, index) => addDays(gridStart, index));
@@ -79,50 +84,49 @@ export default function Calendar() {
       }}
     >
       <Header
-        title="A view of your days."
-        subtitle="Make room for work, life, and everything between."
+        title={date.toLocaleDateString([], { month: 'long', year: 'numeric' })}
+        titleSize={27}
+        action={
+          <View style={{ flexDirection: 'row' }}>
+            <Pressable
+              accessibilityLabel="Previous calendar period"
+              onPress={() => move(-1)}
+              style={{
+                minWidth: 44,
+                minHeight: 44,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <ChevronLeft size={21} color={theme.ink} />
+            </Pressable>
+            <Pressable
+              accessibilityLabel="Next calendar period"
+              onPress={() => move(1)}
+              style={{
+                minWidth: 44,
+                minHeight: 44,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <ChevronRight size={21} color={theme.ink} />
+            </Pressable>
+          </View>
+        }
       />
       <Chips values={['Day', 'Week', 'Month']} value={view} onChange={setView} />
       {view === 'Month' ? (
         <View
           style={{
-            backgroundColor: theme.surface,
+            backgroundColor: 'transparent',
             borderRadius: 24,
-            padding: 16,
+            padding: 0,
             gap: 16,
           }}
         >
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <Pressable
-              accessibilityLabel="Previous month"
-              onPress={() =>
-                setDate(new Date(date.getFullYear(), date.getMonth() - 1, 1))
-              }
-              style={{ padding: 12 }}
-            >
-              <ChevronLeft size={20} color={theme.ink} />
-            </Pressable>
-            <Label size={17} bold>
-              {date.toLocaleDateString([], { month: 'long', year: 'numeric' })}
-            </Label>
-            <Pressable
-              accessibilityLabel="Next month"
-              onPress={() =>
-                setDate(new Date(date.getFullYear(), date.getMonth() + 1, 1))
-              }
-              style={{ padding: 12 }}
-            >
-              <ChevronRight size={20} color={theme.ink} />
-            </Pressable>
-          </View>
           <View style={{ flexDirection: 'row' }}>
-            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
               <View key={index} style={{ width: `${100 / 7}%`, alignItems: 'center' }}>
                 <Label size={12} muted>
                   {day}
