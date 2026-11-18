@@ -205,6 +205,7 @@ export function AuthScreen({ register = false }: { register?: boolean }) {
           </View>
           {!register && (
             <Pressable
+              cssInterop={false}
               accessibilityRole="link"
               onPress={() => router.push('/(auth)/forgot-password')}
               style={({ pressed }) => ({
@@ -223,6 +224,7 @@ export function AuthScreen({ register = false }: { register?: boolean }) {
           <View style={{ marginTop: register ? 24 : 12, gap: 16 }}>
             <ErrorNotice error={mutation.error} />
             <Pressable
+              cssInterop={false}
               accessibilityRole="button"
               accessibilityLabel={register ? 'Create account' : 'Sign in'}
               accessibilityState={{
@@ -270,6 +272,7 @@ export function AuthScreen({ register = false }: { register?: boolean }) {
               {register ? 'Already have an account?' : 'New to Dayflow?'}
             </Label>
             <Pressable
+              cssInterop={false}
               accessibilityRole="link"
               onPress={() =>
                 router.replace(register ? '/(auth)/login' : '/(auth)/register')

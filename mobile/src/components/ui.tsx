@@ -185,6 +185,8 @@ export function Button({
   const color = secondary ? theme.primary : theme.primaryInk;
   return (
     <Pressable
+      // Preserve the native style callback; NativeWind flattens functions on native.
+      cssInterop={false}
       accessibilityRole="button"
       disabled={busy || disabled}
       onPress={onPress}

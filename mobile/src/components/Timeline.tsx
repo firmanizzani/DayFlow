@@ -67,6 +67,7 @@ export function Timeline({
               />
             </View>
             <Pressable
+              cssInterop={false}
               onPress={() =>
                 router.push({ pathname: '/tasks/[id]', params: { id: plan.taskId } })
               }

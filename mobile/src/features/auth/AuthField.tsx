@@ -70,6 +70,7 @@ export const AuthField = forwardRef<
         {trailing}
         {password && (
           <Pressable
+            cssInterop={false}
             accessibilityRole="button"
             accessibilityLabel={`${visible ? 'Hide' : 'Show'} ${label.toLowerCase()}`}
             onPress={() => setVisible((current) => !current)}

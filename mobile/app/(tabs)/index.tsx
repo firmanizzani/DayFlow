@@ -2,9 +2,7 @@ import { useState } from 'react';
 import { View, Pressable, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Plus, Timer, ArrowUpRight } from 'lucide-react-native';
-import Svg, { Circle } from 'react-native-svg';
+import { Plus } from 'lucide-react-native';
 import {
   Screen,
   Header,
@@ -23,7 +21,7 @@ import { api } from '@/services/api';
 import { useSession } from '@/store/session';
 import { useTheme } from '@/theme';
 import { dateKey } from '@/utils/date';
-import type { Dashboard, Category, Page, Task, Plan, Occurrence } from '@/types';
+import type { Dashboard, Category, Task, Plan } from '@/types';
 
 export default function Today() {
   const { width } = useWindowDimensions();
@@ -57,7 +55,6 @@ export default function Today() {
       api<{ overdueTasks: Task[]; missedSessions: Plan[] }>('/dashboard/unfinished'),
   });
   const overview = dashboard.data?.overview;
-  const percentage = overview?.completionRate ?? 0;
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
@@ -126,18 +123,30 @@ export default function Today() {
                 categories={categories.data}
               />
             </Section>
-            <View style={{ flexDirection: 'row', gap: 12 }}>
-              <View style={{ flex: 1 }}>
-                <Button title="Add task" onPress={() => router.push('/tasks/edit')} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Button
-                  secondary
-                  title="Find focus"
-                  onPress={() => router.push('/focus')}
-                />
-              </View>
-            </View>
+            <Pressable
+              cssInterop={false}
+              accessibilityRole="button"
+              accessibilityLabel="Add task"
+              onPress={() => router.push('/tasks/edit')}
+              style={({ pressed }) => ({
+                alignSelf: 'flex-end',
+                minHeight: 48,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                borderRadius: 14,
+                backgroundColor: theme.soft,
+                opacity: pressed ? 0.75 : 1,
+              })}
+            >
+              <Plus size={17} color={theme.isDark ? theme.primary : '#5948C5'} />
+              <Label size={14} bold color={theme.isDark ? theme.primary : '#5948C5'}>
+                Add task
+              </Label>
+            </Pressable>
             <Section
               title="Still on your mind"
               action="View all"

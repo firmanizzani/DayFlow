@@ -12,6 +12,7 @@ export function AuthMasthead({ compact = false }: { compact?: boolean }) {
       <View style={{ minHeight: 56, alignItems: 'center', justifyContent: 'center' }}>
         {compact && (
           <Pressable
+            cssInterop={false}
             accessibilityRole="button"
             accessibilityLabel="Back to sign in"
             onPress={() => router.replace('/(auth)/login')}

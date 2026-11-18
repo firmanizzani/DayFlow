@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { View, FlatList, Pressable, TextInput } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, FlatList, Keyboard, Pressable, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { Plus, Search, SlidersHorizontal } from 'lucide-react-native';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
@@ -28,6 +28,19 @@ export default function Tasks() {
   const [sort, setSort] = useState('createdAt');
   const [deadline, setDeadline] = useState('Any deadline');
   const [filters, setFilters] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', () =>
+      setKeyboardVisible(true),
+    );
+    const hide = Keyboard.addListener('keyboardDidHide', () =>
+      setKeyboardVisible(false),
+    );
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
   const categories = useQuery({
     queryKey: ['categories'],
     queryFn: () => api<Category[]>('/categories'),
@@ -67,7 +80,7 @@ export default function Tasks() {
         keyExtractor={(task) => task.id}
         contentContainerStyle={{
           padding: 20,
-          paddingBottom: 40,
+          paddingBottom: 112,
           gap: 12,
           maxWidth: 680,
           width: '100%',
@@ -85,19 +98,6 @@ export default function Tasks() {
             <Header
               title="My tasks"
               subtitle={`${query.data?.pages[0].totalElements ?? 0} tasks in this view`}
-              action={
-                <Pressable
-                  accessibilityLabel="Add task"
-                  onPress={() => router.push('/tasks/edit')}
-                  style={{
-                    backgroundColor: theme.primary,
-                    padding: 14,
-                    borderRadius: 18,
-                  }}
-                >
-                  <Plus color={theme.primaryInk} size={24} />
-                </Pressable>
-              }
             />
             <TaskSummary onFilter={setStatus} />
             <View
@@ -198,6 +198,48 @@ export default function Tasks() {
         }
         ListFooterComponent={query.isFetchingNextPage ? <Loading /> : undefined}
       />
+      {!keyboardVisible && (
+        <View
+          pointerEvents="box-none"
+          style={{ position: 'absolute', left: 0, right: 0, bottom: 16 }}
+        >
+          <View
+            pointerEvents="box-none"
+            style={{
+              width: '100%',
+              maxWidth: 680,
+              alignSelf: 'center',
+              paddingHorizontal: 20,
+              alignItems: 'flex-end',
+            }}
+          >
+            <Pressable
+              cssInterop={false}
+              accessibilityRole="button"
+              accessibilityLabel="Add task"
+              testID="tasks-add-floating"
+              onPress={() => router.push('/tasks/edit')}
+              style={({ pressed }) => ({
+                width: 56,
+                height: 56,
+                borderRadius: 18,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: theme.isDark ? theme.primary : '#6553DB',
+                shadowColor: '#29234C',
+                shadowOffset: { width: 0, height: 5 },
+                shadowOpacity: theme.isDark ? 0.25 : 0.18,
+                shadowRadius: 12,
+                elevation: 6,
+                opacity: pressed ? 0.85 : 1,
+                transform: [{ scale: pressed ? 0.96 : 1 }],
+              })}
+            >
+              <Plus color={theme.primaryInk} size={27} strokeWidth={2} />
+            </Pressable>
+          </View>
+        </View>
+      )}
     </Screen>
   );
 }
