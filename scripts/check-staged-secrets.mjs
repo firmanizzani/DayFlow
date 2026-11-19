@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
-const files = execFileSync('git', ['diff', '--cached', '--name-only', '-z'], {
+const files = execFileSync('git', ['diff', '--cached', '--diff-filter=d', '--name-only', '-z'], {
   encoding: 'utf8',
 })
   .split('\0')

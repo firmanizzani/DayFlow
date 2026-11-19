@@ -30,3 +30,7 @@ GoogleService-Info.plist
 *.log
 .DS_Store
 backend/.mvn/local-repository/
+
+# Local planning documents
+/prd.md
+/prompt.md
