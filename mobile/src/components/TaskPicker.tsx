@@ -31,7 +31,7 @@ export function TaskPicker({
   });
   return (
     <View className="gap-3">
-      {value && (
+      {!!value && (
         <Button
           secondary
           title={selected.data?.title ?? 'Selected task'}

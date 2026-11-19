@@ -238,7 +238,7 @@ export function Field({
         }}
         {...props}
       />
-      {error && (
+      {!!error && (
         <Label color={theme.danger} size={13}>
           {error}
         </Label>

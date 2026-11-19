@@ -64,7 +64,7 @@ The timer uses timestamps to recalculate remaining time when the app becomes act
 | State and data  | Zustand, TanStack Query                                     |
 | Forms           | React Hook Form, Zod                                        |
 | Native services | Expo SecureStore, Expo Notifications                        |
-| Backend         | Java 21, Spring Boot, Spring Security, Spring Data JPA      |
+| Backend         | Java 25 LTS, Spring Boot, Spring Security, Spring Data JPA   |
 | Database        | PostgreSQL, with Neon configuration support                 |
 | Migrations      | Flyway                                                      |
 
@@ -77,7 +77,7 @@ Native session credentials are stored with Expo SecureStore. The web preview kee
 ### Requirements
 
 - Node.js 22.13 or newer and npm.
-- Java 21 or newer.
+- Java 25 LTS or newer.
 - Maven 3.9 or newer, or the bundled setup script for Windows.
 - A PostgreSQL database, such as a Neon database.
 - A physical device or emulator for native testing.
@@ -118,6 +118,13 @@ powershell -ExecutionPolicy Bypass -File scripts/backend.ps1 run
 ```
 
 The setup script downloads Maven into `.tools`. The backend script loads `backend/.env` and can use Android Studio's bundled Java runtime if `JAVA_HOME` is not set.
+
+After setup, you can also start the backend with the shortcut from the `backend` directory:
+
+```powershell
+cd backend
+.\start.ps1
+```
 
 If Maven is already installed, load the environment variables into your shell, then run `mvn spring-boot:run` from `backend`.
 

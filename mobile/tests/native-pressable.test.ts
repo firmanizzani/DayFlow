@@ -142,3 +142,12 @@ test('Timeline cards retain full-width native layout for short task titles', () 
   assert.equal(style.backgroundColor, palette.soft);
   assert.equal(style.minHeight, 84);
 });
+
+test('An empty field error never renders a bare text node inside a native View', () => {
+  const { Field } = loadComponent('../src/components/ui.tsx');
+  const field = Field({ label: 'Start time', error: '' });
+  assert.ok(
+    field.props.children.every((child: unknown) => typeof child !== 'string'),
+    'Empty validation text must not become a raw child of View',
+  );
+});

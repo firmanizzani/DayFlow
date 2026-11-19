@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Screen, Header, Field, Label, Button, ErrorNotice } from '@/components/ui';
+import { Screen, Header, Label, Button, ErrorNotice } from '@/components/ui';
+import { LockKeyhole } from 'lucide-react-native';
+import { AuthField } from '@/features/auth/AuthField';
+import { useTheme } from '@/theme';
 import { api } from '@/services/api';
 import { endLocalSession } from '@/services/account';
 
 export default function Security() {
+  const theme = useTheme();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const save = useMutation({
@@ -25,19 +29,25 @@ export default function Security() {
         title="Account security"
         subtitle="Change your password and keep your space private."
       />
-      <Field
+      <AuthField
         label="Current password"
+        icon={<LockKeyhole size={19} color={theme.muted} />}
         value={currentPassword}
         onChangeText={setCurrentPassword}
         autoComplete="current-password"
-        secureTextEntry
+        autoCapitalize="none"
+        autoCorrect={false}
+        password
       />
-      <Field
+      <AuthField
         label="New password"
+        icon={<LockKeyhole size={19} color={theme.muted} />}
         value={newPassword}
         onChangeText={setNewPassword}
         autoComplete="new-password"
-        secureTextEntry
+        autoCapitalize="none"
+        autoCorrect={false}
+        password
       />
       <Label muted size={13}>
         Use at least 8 characters. Changing your password revokes your refresh sessions.

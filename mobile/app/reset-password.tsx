@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
-import { Screen, Header, Field, Button, ErrorNotice, Label } from '@/components/ui';
+import { Screen, Header, Button, ErrorNotice, Label } from '@/components/ui';
+import { LockKeyhole } from 'lucide-react-native';
+import { AuthField } from '@/features/auth/AuthField';
+import { useTheme } from '@/theme';
 import { api } from '@/services/api';
 
 export default function ResetPassword() {
+  const theme = useTheme();
   const { token } = useLocalSearchParams<{ token: string }>();
   const [password, setPassword] = useState('');
   const mutation = useMutation({
@@ -21,11 +25,15 @@ export default function ResetPassword() {
         title="A new beginning."
         subtitle="Choose a password with at least 8 characters."
       />
-      <Field
+      <AuthField
         label="New password"
+        icon={<LockKeyhole size={19} color={theme.muted} />}
         value={password}
         onChangeText={setPassword}
-        secureTextEntry
+        autoComplete="new-password"
+        autoCapitalize="none"
+        autoCorrect={false}
+        password
       />
       <ErrorNotice error={mutation.error} />
       {mutation.isSuccess ? (

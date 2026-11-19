@@ -1,5 +1,7 @@
 # Verification baseline — 18 November 2026
 
+For the latest rerun, added coverage, fixes, and remaining limits, see [19 November 2026 verification](verification-2026-11-19.md).
+
 ## Checks actually run
 
 - Spring Boot compiled and packaged using Java 25 with Java 21 target compatibility.
